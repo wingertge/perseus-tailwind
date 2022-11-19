@@ -9,6 +9,7 @@ repository = "https://github.com/wingertge/perseus-tailwind"
 readme = "README.md"
 keywords = ["webdev", "wasm", "perseus"]
 categories = ["web-programming", "development-tools", "wasm"]
+exclude = [".github/*", ".idea/*"]
 
 [dependencies]
 perseus = "^0.4.0-beta.11"
