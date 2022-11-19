@@ -22,6 +22,10 @@ PerseusApp::new()
 
 If you're already using plugins just add the plugin to your `Plugins` as usual.
 
+# Versioning
+Major and minor versions will follow the Perseus version for simplicity. This means 0.4 of this plugin
+will work with Perseus 0.4.x, 0.5 would work with a future 0.5 version of Perseus, etc.
+
 # Using a custom binary
 
 If you for some reason want to use a specific version of the CLI or some other CLI with the same
