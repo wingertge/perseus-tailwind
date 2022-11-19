@@ -38,10 +38,8 @@
 #[cfg(not(target_family = "wasm"))]
 use perseus::plugins::PluginAction;
 use perseus::plugins::{empty_control_actions_registrar, Plugin, PluginEnv};
-use std::fs::File;
-use std::io::Write;
-use std::path::PathBuf;
-use std::process::Command;
+#[cfg(not(target_family = "wasm"))]
+use std::{fs::File, io::Write, path::PathBuf, process::Command};
 
 static PLUGIN_NAME: &str = "tailwind-plugin";
 
@@ -69,6 +67,7 @@ pub struct TailwindOptions {
 
 /// The plugin constructor
 pub fn get_tailwind_plugin<G: perseus::Html>() -> Plugin<G, TailwindOptions> {
+    #[allow(unused_mut)]
     Plugin::new(
         PLUGIN_NAME,
         |mut actions| {
