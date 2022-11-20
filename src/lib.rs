@@ -126,7 +126,7 @@ fn try_run_tailwind(options: &TailwindOptions) {
     // Also, don't write info messages to stderr instead of stdout
     // Also if you're going to print JSON make the whole thing JSON and not some exception stack
     // trace syntax followed by JSON
-    if output.contains("}") {
+    if output.contains('}') {
         panic!("{}", output);
     }
 }
