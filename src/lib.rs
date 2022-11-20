@@ -121,7 +121,14 @@ fn try_run_tailwind(options: &TailwindOptions) {
         .args(args)
         .output()
         .expect("Failed to run Tailwind CLI");
-    println!("[Tailwind]: {}", String::from_utf8_lossy(&output.stdout));
+    let output = String::from_utf8_lossy(&output.stderr);
+    // Errors always contain a JSON object. Please start using result codes Tailwind
+    // Also, don't write info messages to stderr instead of stdout
+    // Also if you're going to print JSON make the whole thing JSON and not some exception stack
+    // trace syntax followed by JSON
+    if output.contains("}") {
+        panic!("{}", output);
+    }
 }
 
 #[cfg(not(target_family = "wasm"))]
