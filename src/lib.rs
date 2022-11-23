@@ -15,7 +15,8 @@
 //!         perseus_tailwind::get_tailwind_plugin,
 //!         perseus_tailwind::TailwindOptions {
 //!             in_file: "src/tailwind.css".into(),
-//!             out_file: "static/tailwind.css".into(),
+//!             // Don't put this in /static, it will trigger build loops
+//!             out_file: "generated/tailwind.css".into(),
 //!         },
 //!     ))
 //! # ;
@@ -61,7 +62,9 @@ static BINARY_NAME: &str = "tailwindcss-windows-x64.exe";
 pub struct TailwindOptions {
     /// The path to the input CSS file
     pub in_file: String,
-    /// The path to the CSS file output by the CLI.
+    /// The path to the CSS file output by the CLI.\
+    /// **DO NOT PUT THIS IN `/static` UNLESS YOU LIKE BUILD LOOPS!**\
+    /// Always use static aliases instead.\
     pub out_file: String,
 }
 

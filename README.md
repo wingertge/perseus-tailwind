@@ -15,7 +15,8 @@ PerseusApp::new()
         perseus_tailwind::get_tailwind_plugin,
         perseus_tailwind::TailwindOptions {
             in_file: "src/tailwind.css".into(),
-            out_file: "static/tailwind.css".into(),
+            // Don't put this in /static, it will trigger build loops
+            out_file: "generated/tailwind.css".into(),
         },
     ))
 ```
