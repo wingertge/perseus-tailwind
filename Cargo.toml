@@ -13,6 +13,7 @@ exclude = [".github/*", ".idea/*"]
 
 [dependencies]
 perseus = "^0.4.0-beta.11"
+log = "0.4"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 reqwest = { version = "0.11", features = ["blocking"] }

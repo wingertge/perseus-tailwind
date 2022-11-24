@@ -137,8 +137,8 @@ fn try_run_tailwind(options: &TailwindOptions) {
 
 #[cfg(not(target_family = "wasm"))]
 fn install_tailwind_cli() {
-    println!("Tailwind CLI not found, installing...");
-    println!("Downloading binary for this platform...");
+    log::info!("Tailwind CLI not found, installing...");
+    log::info!("Downloading binary for this platform...");
     let url = format!(
         "https://github.com/tailwindlabs/tailwindcss/releases/latest/download/{BINARY_NAME}"
     );
@@ -147,7 +147,7 @@ fn install_tailwind_cli() {
         .bytes()
         .expect("Failed to read binary content of the tailwind binary download");
 
-    println!("Writing to disk as {BINARY_NAME}...");
+    log::info!("Writing to disk as {BINARY_NAME}...");
     let mut file = File::create(BINARY_NAME).expect("Failed to create binary file");
     file.write_all(&binary)
         .expect("Failed to write binary to disk");
@@ -167,7 +167,7 @@ fn install_tailwind_cli() {
 
 #[cfg(not(target_family = "wasm"))]
 fn init_tailwind() {
-    println!(
+    log::info!(
         "Initializing Tailwind to search all Rust files in 'src' and all HTML files in 'static'."
     );
     let default_config = include_bytes!("default-config.js");
