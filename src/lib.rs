@@ -15,10 +15,12 @@
 //!         perseus_tailwind::get_tailwind_plugin,
 //!         perseus_tailwind::TailwindOptions {
 //!             in_file: "src/tailwind.css".into(),
-//!             // Don't put this in /static, it will trigger build loops
-//!             out_file: "generated/tailwind.css".into(),
+//!             // Don't put this in /static, it will trigger build loops.
+//!             // Put this in /dist and use a static alias instead.
+//!             out_file: "dist/static/tailwind.css".into(),
 //!         },
 //!     ))
+//!     .static_alias("/static/tailwind.css", "dist/static/tailwind.css")
 //! # ;
 //! ```
 //!
@@ -64,7 +66,7 @@ pub struct TailwindOptions {
     pub in_file: String,
     /// The path to the CSS file output by the CLI.\
     /// **DO NOT PUT THIS IN `/static` UNLESS YOU LIKE BUILD LOOPS!**\
-    /// Always use static aliases instead.\
+    /// Always put it somewhere in `/dist` use static aliases instead.\
     pub out_file: String,
 }
 
@@ -119,7 +121,6 @@ fn try_run_tailwind(options: &TailwindOptions) {
         args.push("--minify");
     }
 
-    println!("{}", BINARY_NAME);
     let output = Command::new(format!("./{BINARY_NAME}"))
         .args(args)
         .output()
