@@ -40,7 +40,10 @@
 
 #[cfg(not(target_family = "wasm"))]
 use perseus::plugins::PluginAction;
-use perseus::plugins::{empty_control_actions_registrar, Plugin, PluginEnv};
+use perseus::{
+    plugins::{empty_control_actions_registrar, Plugin, PluginEnv},
+    prelude::Html,
+};
 #[cfg(not(target_family = "wasm"))]
 use std::{fs::File, io::Write, path::PathBuf, process::Command};
 
@@ -71,7 +74,7 @@ pub struct TailwindOptions {
 }
 
 /// The plugin constructor
-pub fn get_tailwind_plugin<G: perseus::Html>() -> Plugin<G, TailwindOptions> {
+pub fn get_tailwind_plugin() -> Plugin<TailwindOptions> {
     #[allow(unused_mut)]
     Plugin::new(
         PLUGIN_NAME,
@@ -82,21 +85,17 @@ pub fn get_tailwind_plugin<G: perseus::Html>() -> Plugin<G, TailwindOptions> {
                     .build_actions
                     .before_build
                     .register_plugin(PLUGIN_NAME, |_, data| {
-                        if let Some(options) = data.downcast_ref::<TailwindOptions>() {
-                            try_run_tailwind(options);
-                        } else {
-                            unreachable!()
-                        }
+                        let options = data.downcast_ref::<TailwindOptions>().unwrap();
+                        try_run_tailwind(options)?;
+                        Ok(())
                     });
                 actions
                     .export_actions
                     .before_export
                     .register_plugin(PLUGIN_NAME, |_, data| {
-                        if let Some(options) = data.downcast_ref::<TailwindOptions>() {
-                            try_run_tailwind(options);
-                        } else {
-                            unreachable!()
-                        }
+                        let options = data.downcast_ref::<TailwindOptions>().unwrap();
+                        try_run_tailwind(options)?;
+                        Ok(())
                     });
             }
             actions
@@ -107,7 +106,7 @@ pub fn get_tailwind_plugin<G: perseus::Html>() -> Plugin<G, TailwindOptions> {
 }
 
 #[cfg(not(target_family = "wasm"))]
-fn try_run_tailwind(options: &TailwindOptions) {
+fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
     let cli = PathBuf::from(BINARY_NAME);
     if !cli.exists() {
         install_tailwind_cli();
@@ -131,7 +130,9 @@ fn try_run_tailwind(options: &TailwindOptions) {
     // Also if you're going to print JSON make the whole thing JSON and not some exception stack
     // trace syntax followed by JSON
     if output.contains('}') {
-        panic!("{}", output);
+        Err(output.to_string())
+    } else {
+        Ok(())
     }
 }
 
