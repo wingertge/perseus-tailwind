@@ -1,6 +1,6 @@
 [package]
 name = "perseus-tailwind"
-version = "0.4.2"
+version = "0.4.3"
 edition = "2021"
 
 license = "MIT OR Apache-2.0"
@@ -14,6 +14,7 @@ exclude = [".github/*", ".idea/*"]
 [dependencies]
 perseus = { version = "0.4.0-beta.17" }
 log = "0.4"
+tokio = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 reqwest = { version = "0.11", features = ["blocking"] }

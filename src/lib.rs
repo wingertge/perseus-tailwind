@@ -40,10 +40,7 @@
 
 #[cfg(not(target_family = "wasm"))]
 use perseus::plugins::PluginAction;
-use perseus::{
-    plugins::{empty_control_actions_registrar, Plugin, PluginEnv},
-    prelude::Html,
-};
+use perseus::plugins::{empty_control_actions_registrar, Plugin, PluginEnv};
 #[cfg(not(target_family = "wasm"))]
 use std::{fs::File, io::Write, path::PathBuf, process::Command};
 
@@ -109,10 +106,10 @@ pub fn get_tailwind_plugin() -> Plugin<TailwindOptions> {
 fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
     let cli = PathBuf::from(BINARY_NAME);
     if !cli.exists() {
-        install_tailwind_cli();
+        install_tailwind_cli()?;
     }
     if !PathBuf::from("tailwind.config.js").exists() {
-        init_tailwind();
+        init_tailwind()?;
     }
 
     let mut args = vec!["-i", &options.in_file, "-o", &options.out_file];
@@ -123,7 +120,7 @@ fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
     let output = Command::new(format!("./{BINARY_NAME}"))
         .args(args)
         .output()
-        .expect("Failed to run Tailwind CLI");
+        .map_err(|_| "Failed to run Tailwind CLI")?;
     let output = String::from_utf8_lossy(&output.stderr);
     // Errors always contain a JSON object. Please start using result codes Tailwind
     // Also, don't write info messages to stderr instead of stdout
@@ -137,43 +134,50 @@ fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
 }
 
 #[cfg(not(target_family = "wasm"))]
-fn install_tailwind_cli() {
+fn install_tailwind_cli() -> Result<(), String> {
     log::info!("Tailwind CLI not found, installing...");
     log::info!("Downloading binary for this platform...");
     let url = format!(
         "https://github.com/tailwindlabs/tailwindcss/releases/latest/download/{BINARY_NAME}"
     );
-    let binary = reqwest::blocking::get(url)
-        .expect("Failed to download binary. Check it's still available on the tailwind GitHub.")
-        .bytes()
-        .expect("Failed to read binary content of the tailwind binary download");
+    let binary = tokio::task::block_in_place(move || {
+        reqwest::blocking::get(url)
+            .map_err(|_| {
+                "Failed to download binary. Check it's still available on the tailwind GitHub."
+            })?
+            .bytes()
+            .map_err(|_| "Failed to read binary content of the tailwind binary download")
+    })?;
 
     log::info!("Writing to disk as {BINARY_NAME}...");
-    let mut file = File::create(BINARY_NAME).expect("Failed to create binary file");
+    let mut file = File::create(BINARY_NAME).map_err(|_| "Failed to create binary file")?;
     file.write_all(&binary)
-        .expect("Failed to write binary to disk");
+        .map_err(|_| "Failed to write binary to disk")?;
     #[cfg(target_family = "unix")]
     {
         println!("Making the binary executable...");
         use std::os::unix::fs::PermissionsExt;
         let mut perms = file
             .metadata()
-            .expect("Failed to get metadata for binary to set executable permission")
+            .map_err(|_| "Failed to get metadata for binary to set executable permission")?
             .permissions();
         let mode = perms.mode() | 0o550;
         perms.set_mode(mode);
     }
     println!("Done installing Tailwind CLI.");
+    Ok(())
 }
 
 #[cfg(not(target_family = "wasm"))]
-fn init_tailwind() {
+fn init_tailwind() -> Result<(), String> {
     log::info!(
         "Initializing Tailwind to search all Rust files in 'src' and all HTML files in 'static'."
     );
     let default_config = include_bytes!("default-config.js");
-    let mut config = File::create("tailwind.config.js").expect("Failed to create config file");
+    let mut config =
+        File::create("tailwind.config.js").map_err(|_| "Failed to create config file")?;
     config
         .write_all(default_config)
-        .expect("Failed to write default config");
+        .map_err(|_| "Failed to write default config")?;
+    Ok(())
 }
