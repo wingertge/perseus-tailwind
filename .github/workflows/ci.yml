@@ -4,20 +4,24 @@ name: Continuous integration
 
 jobs:
   check:
-    name: Check
+    name: Check Engine
     runs-on: ubuntu-latest
     strategy:
       matrix:
         target:
-          - wasm32-unknown-unknown
-          - x86_64-unknown-linux-gnu
+          - cfg: client
+            target: wasm32-unknown-unknown
+          - cfg: engine
+            target: x86_64-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-          targets: ${{ matrix.target }}
-      - run: cargo check --target ${{ matrix.target }}
+          targets: ${{ matrix.target.target }}
+      - run: cargo check --target ${{ matrix.target.target }}
+        env:
+          RUSTFLAGS: --cfg ${{ matrix.target.cfg }}
 
   fmt:
     name: Rustfmt
@@ -36,13 +40,17 @@ jobs:
     strategy:
       matrix:
         target:
-          - wasm32-unknown-unknown
-          - x86_64-unknown-linux-gnu
+          - cfg: client
+            target: wasm32-unknown-unknown
+          - cfg: engine
+            target: x86_64-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-          targets: ${{ matrix.target }}
+          targets: ${{ matrix.target.target }}
           components: clippy
-      - run: cargo clippy --target ${{ matrix.target }} -- -D warnings
+      - run: cargo clippy --target ${{ matrix.target.target }} -- -D warnings
+        env:
+          RUSTFLAGS: --cfg ${{ matrix.target.cfg }}
