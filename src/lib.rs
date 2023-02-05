@@ -38,10 +38,10 @@
 //! The download and installation should work on Linux, MacOS and Windows on all architectures that
 //! are supported by Tailwind, but is currently only tested on Windows x64.
 
-#[cfg(not(target_family = "wasm"))]
+#[cfg(engine)]
 use perseus::plugins::PluginAction;
 use perseus::plugins::{empty_control_actions_registrar, Plugin, PluginEnv};
-#[cfg(not(target_family = "wasm"))]
+#[cfg(engine)]
 use std::{fs::File, io::Write, path::PathBuf, process::Command};
 
 static PLUGIN_NAME: &str = "tailwind-plugin";
@@ -76,7 +76,7 @@ pub fn get_tailwind_plugin() -> Plugin<TailwindOptions> {
     Plugin::new(
         PLUGIN_NAME,
         |mut actions| {
-            #[cfg(not(target_family = "wasm"))]
+            #[cfg(engine)]
             {
                 actions
                     .build_actions
@@ -102,7 +102,7 @@ pub fn get_tailwind_plugin() -> Plugin<TailwindOptions> {
     )
 }
 
-#[cfg(not(target_family = "wasm"))]
+#[cfg(engine)]
 fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
     let cli = PathBuf::from(BINARY_NAME);
     if !cli.exists() {
@@ -133,7 +133,7 @@ fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
     }
 }
 
-#[cfg(not(target_family = "wasm"))]
+#[cfg(engine)]
 fn install_tailwind_cli() -> Result<(), String> {
     log::info!("Tailwind CLI not found, installing...");
     log::info!("Downloading binary for this platform...");
@@ -168,7 +168,7 @@ fn install_tailwind_cli() -> Result<(), String> {
     Ok(())
 }
 
-#[cfg(not(target_family = "wasm"))]
+#[cfg(engine)]
 fn init_tailwind() -> Result<(), String> {
     log::info!(
         "Initializing Tailwind to search all Rust files in 'src' and all HTML files in 'static'."
