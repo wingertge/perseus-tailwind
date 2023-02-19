@@ -15,10 +15,12 @@ PerseusApp::new()
         perseus_tailwind::get_tailwind_plugin,
         perseus_tailwind::TailwindOptions {
             in_file: "src/tailwind.css".into(),
-            // Don't put this in /static, it will trigger build loops
-            out_file: "generated/tailwind.css".into(),
+            // Don't put this in /static, it will trigger build loops.
+            // Put this in /dist and use a static alias instead.
+            out_file: "dist/static/tailwind.css".into(),
         },
     ))
+    .static_alias("/static/tailwind.css", "dist/static/tailwind.css")
 ```
 
 If you're already using plugins just add the plugin to your `Plugins` as usual.
