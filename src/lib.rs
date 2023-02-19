@@ -161,7 +161,7 @@ fn install_tailwind_cli() -> Result<(), String> {
             .metadata()
             .map_err(|_| "Failed to get metadata for binary to set executable permission")?
             .permissions();
-        let mode = perms.mode() | 0o550;
+        let mode = perms.mode() | 0o555;
         perms.set_mode(mode);
     }
     println!("Done installing Tailwind CLI.");
