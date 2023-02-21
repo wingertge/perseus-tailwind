@@ -104,6 +104,8 @@ pub fn get_tailwind_plugin() -> Plugin<TailwindOptions> {
 
 #[cfg(engine)]
 fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
+    use std::time::Duration;
+
     let cli = PathBuf::from(BINARY_NAME);
     if !cli.exists() {
         install_tailwind_cli()?;
@@ -117,20 +119,22 @@ fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
         args.push("--minify");
     }
 
-    let output = Command::new(format!("./{BINARY_NAME}"))
+    let child = Command::new(format!("./{BINARY_NAME}"))
         .args(args)
-        .output()
+        .spawn()
         .map_err(|_| "Failed to run Tailwind CLI")?;
-    let output = String::from_utf8_lossy(&output.stderr);
-    // Errors always contain a JSON object. Please start using result codes Tailwind
-    // Also, don't write info messages to stderr instead of stdout
-    // Also if you're going to print JSON make the whole thing JSON and not some exception stack
-    // trace syntax followed by JSON
-    if output.contains('}') {
-        Err(output.to_string())
-    } else {
-        Ok(())
+
+    let output = child
+        .wait_with_output()
+        .map_err(|_| "Failed to wait on Tailwind CLI")?;
+    let output = String::from_utf8_lossy(&output.stdout);
+
+    // Try to figure out if there was an error
+    if output.contains('{') {
+        return Err(output.to_string());
     }
+
+    Ok(())
 }
 
 #[cfg(engine)]
