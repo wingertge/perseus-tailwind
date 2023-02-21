@@ -16,11 +16,11 @@
 //!         perseus_tailwind::TailwindOptions {
 //!             in_file: "src/tailwind.css".into(),
 //!             // Don't put this in /static, it will trigger build loops.
-//!             // Put this in /dist and use a static alias instead.
-//!             out_file: "dist/static/tailwind.css".into(),
+//!             // Put this in /dist or a custom folder and use a static alias instead.
+//!             out_file: "dist/tailwind.css".into(),
 //!         },
 //!     ))
-//!     .static_alias("/static/tailwind.css", "dist/static/tailwind.css")
+//!     .static_alias("/tailwind.css", "dist/tailwind.css")
 //! # ;
 //! ```
 //!
