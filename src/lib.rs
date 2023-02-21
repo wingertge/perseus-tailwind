@@ -104,8 +104,6 @@ pub fn get_tailwind_plugin() -> Plugin<TailwindOptions> {
 
 #[cfg(engine)]
 fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
-    use std::time::Duration;
-
     let cli = PathBuf::from(BINARY_NAME);
     if !cli.exists() {
         install_tailwind_cli()?;
