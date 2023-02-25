@@ -165,6 +165,8 @@ fn install_tailwind_cli() -> Result<(), String> {
             .permissions();
         let mode = perms.mode() | 0o555;
         perms.set_mode(mode);
+        file.set_permissions(perms)
+            .map_err(|e| format!("Failed to set permissions: {e}"))?;
     }
     println!("Done installing Tailwind CLI.");
     Ok(())
