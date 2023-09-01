@@ -13,12 +13,9 @@
 //! PerseusApp::new()
 //!     .plugins(Plugins::new().plugin(
 //!         perseus_tailwind::get_tailwind_plugin,
-//!         perseus_tailwind::TailwindOptions {
-//!             in_file: "src/tailwind.css".into(),
-//!             // Don't put this in /static, it will trigger build loops.
-//!             // Put this in /dist or a custom folder and use a static alias instead.
-//!             out_file: "dist/tailwind.css".into(),
-//!         },
+//!         // Don't put this in /static, it will trigger build loops.
+//!         // Put this in /dist or a custom folder and use a static alias instead.
+//!         perseus_tailwind::TailwindOptions::new("dist/tailwind.css")
 //!     ))
 //!     .static_alias("/tailwind.css", "dist/tailwind.css")
 //! # ;
@@ -60,14 +57,42 @@ static BINARY_NAME: &str = "tailwindcss-macos-x64";
 static BINARY_NAME: &str = "tailwindcss-windows-x64.exe";
 
 /// Options for the Tailwind CLI
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct TailwindOptions {
     /// The path to the input CSS file
-    pub in_file: String,
+    pub in_file: Option<String>,
     /// The path to the CSS file output by the CLI.\
     /// **DO NOT PUT THIS IN `/static` UNLESS YOU LIKE BUILD LOOPS!**\
     /// Always put it somewhere in `/dist` use static aliases instead.\
     pub out_file: String,
+    /// A custom config path for the CLI
+    pub config_path: Option<String>,
+}
+
+impl TailwindOptions {
+    /// Create a new options struct with only the out path set
+    ///
+    /// # Out Path
+    /// The path to the CSS file output by the CLI.\
+    /// **DO NOT PUT THIS IN `/static` UNLESS YOU LIKE BUILD LOOPS!**\
+    /// Always put it somewhere in `/dist` use static aliases instead.\
+    pub fn new(out_file: impl Into<String>) -> Self {
+        TailwindOptions {
+            out_file: out_file.into(),
+            ..Default::default()
+        }
+    }
+
+    /// Set the input file for the tailwind CLI
+    pub fn in_file(mut self, in_file: impl Into<String>) -> Self {
+        self.in_file = Some(in_file.into());
+        self
+    }
+
+    pub fn config(mut self, config_path: impl Into<String>) -> Self {
+        self.config_path = Some(config_path.into());
+        self
+    }
 }
 
 /// The plugin constructor
@@ -104,17 +129,34 @@ pub fn get_tailwind_plugin() -> Plugin<TailwindOptions> {
 
 #[cfg(engine)]
 fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
+    use std::path::PathBuf;
+
     let cli = PathBuf::from(BINARY_NAME);
     if !cli.exists() {
         install_tailwind_cli()?;
     }
-    if !PathBuf::from("tailwind.config.js").exists() {
+
+    let config_path = options
+        .config_path
+        .as_ref()
+        .map(|path| PathBuf::from(path))
+        .unwrap_or_else(|| PathBuf::from("tailwind.config.js"));
+
+    if !config_path.exists() {
         init_tailwind()?;
     }
 
-    let mut args = vec!["-i", &options.in_file, "-o", &options.out_file];
+    let mut args = vec!["-o", &options.out_file];
     if cfg!(not(debug_assertions)) {
         args.push("--minify");
+    }
+
+    if let Some(in_file) = &options.in_file {
+        args.extend(["-i", in_file]);
+    }
+
+    if let Some(config) = &options.config_path {
+        args.extend(["-c", config]);
     }
 
     let child = Command::new(format!("./{BINARY_NAME}"))
