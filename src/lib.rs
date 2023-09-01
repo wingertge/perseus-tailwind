@@ -129,8 +129,6 @@ pub fn get_tailwind_plugin() -> Plugin<TailwindOptions> {
 
 #[cfg(engine)]
 fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
-    use std::path::PathBuf;
-
     let cli = PathBuf::from(BINARY_NAME);
     if !cli.exists() {
         install_tailwind_cli()?;
@@ -139,7 +137,7 @@ fn try_run_tailwind(options: &TailwindOptions) -> Result<(), String> {
     let config_path = options
         .config_path
         .as_ref()
-        .map(|path| PathBuf::from(path))
+        .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("tailwind.config.js"));
 
     if !config_path.exists() {
